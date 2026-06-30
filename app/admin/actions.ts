@@ -13,6 +13,7 @@ export async function addOrUpdateProduct(formData: FormData) {
   const supabase = createClient()
   const data = {
     name: formData.get('name') as string,
+    category: (formData.get('category') as string) || 'Lainnya',
     price: Number(formData.get('price')),
     stock: Number(formData.get('stock')),
     unit: formData.get('unit') as string,
@@ -37,6 +38,24 @@ export async function toggleProductActive(id: string, isActive: boolean) {
   if (error) throw error
   revalidatePath('/admin/produk')
   revalidatePath('/kasir')
+}
+
+export async function getTransactions() {
+  const supabase = createClient()
+  const { data: transactions, error } = await supabase
+    .from('transactions')
+    .select('*, transaction_items(*)')
+    .order('created_at', { ascending: false })
+  if (error) throw error
+
+  const cashierIds = Array.from(new Set((transactions || []).map((t: any) => t.cashier_id).filter(Boolean)))
+  let profilesMap: Record<string, string> = {}
+  if (cashierIds.length > 0) {
+    const { data: profiles } = await supabase.from('profiles').select('id, full_name').in('id', cashierIds)
+    profilesMap = Object.fromEntries((profiles || []).map((p: any) => [p.id, p.full_name]))
+  }
+
+  return (transactions || []).map((t: any) => ({ ...t, cashier_name: profilesMap[t.cashier_id] || '-' }))
 }
 
 export async function voidTransaction(transactionId: string, reason: string) {
