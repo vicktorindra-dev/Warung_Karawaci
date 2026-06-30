@@ -8,6 +8,21 @@ export async function getActiveProducts() {
   return data
 }
 
+export async function getMyTransactions() {
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+
+  const { data, error } = await supabase
+    .from('transactions')
+    .select('*, transaction_items(*)')
+    .eq('cashier_id', user.id)
+    .order('created_at', { ascending: false })
+
+  if (error) throw error
+  return data
+}
+
 export async function submitTransaction(totalAmount: number, items: any[]) {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()

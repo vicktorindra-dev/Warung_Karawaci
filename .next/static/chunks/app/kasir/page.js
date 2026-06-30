@@ -39,6 +39,7 @@ eval(__webpack_require__.ts("// This file must be bundled in the app's client la
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   getActiveProducts: function() { return /* binding */ getActiveProducts; },
+/* harmony export */   getMyTransactions: function() { return /* binding */ getMyTransactions; },
 /* harmony export */   submitTransaction: function() { return /* binding */ submitTransaction; }
 /* harmony export */ });
 /* harmony import */ var next_dist_client_app_call_server__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! next/dist/client/app-call-server */ "(app-pages-browser)/./node_modules/next/dist/client/app-call-server.js");
@@ -51,9 +52,10 @@ function __build_action__(action, args) {
   return (0,next_dist_client_app_call_server__WEBPACK_IMPORTED_MODULE_0__.callServer)(action.$$id, args)
 }
 
-/* __next_internal_action_entry_do_not_use__ {"1f7439201077d9bdb63f19b290a46f3f767d41d9":"submitTransaction","9ced7e9bb88c1e78e8d991a11a253ed4ffbcb3d4":"getActiveProducts"} */ var submitTransaction = (0,private_next_rsc_action_client_wrapper__WEBPACK_IMPORTED_MODULE_1__.createServerReference)("1f7439201077d9bdb63f19b290a46f3f767d41d9");
+/* __next_internal_action_entry_do_not_use__ {"1f7439201077d9bdb63f19b290a46f3f767d41d9":"submitTransaction","9ced7e9bb88c1e78e8d991a11a253ed4ffbcb3d4":"getActiveProducts","b936157b5af578298fe8dafa122b22cdf7fa3e21":"getMyTransactions"} */ var submitTransaction = (0,private_next_rsc_action_client_wrapper__WEBPACK_IMPORTED_MODULE_1__.createServerReference)("1f7439201077d9bdb63f19b290a46f3f767d41d9");
 
 var getActiveProducts = (0,private_next_rsc_action_client_wrapper__WEBPACK_IMPORTED_MODULE_1__.createServerReference)("9ced7e9bb88c1e78e8d991a11a253ed4ffbcb3d4");
+var getMyTransactions = (0,private_next_rsc_action_client_wrapper__WEBPACK_IMPORTED_MODULE_1__.createServerReference)("b936157b5af578298fe8dafa122b22cdf7fa3e21");
 
 
 
