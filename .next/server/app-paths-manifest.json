@@ -1,6 +1,0 @@
-{
-  "/login/page": "app/login/page.js",
-  "/admin/page": "app/admin/page.js",
-  "/kasir/page": "app/kasir/page.js",
-  "/kasir/riwayat/page": "app/kasir/riwayat/page.js"
-}
