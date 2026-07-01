@@ -44,7 +44,7 @@ export async function getTransactions() {
   const supabase = createClient()
   const { data: transactions, error } = await supabase
     .from('transactions')
-    .select('*, transaction_items(*)')
+    .select('*')
     .order('created_at', { ascending: false })
   if (error) throw error
 
@@ -68,6 +68,19 @@ export async function getTransactions() {
     cashier_name: profilesMap[t.cashier_id] || '-',
     voided_by_name: t.voided_by ? (profilesMap[t.voided_by] || '-') : null,
   }))
+}
+
+// Detail item baru diambil saat baris transaksi dibuka (bukan sekaligus di awal),
+// supaya halaman Transaksi & Void lebih ringan & cepat dimuat.
+export async function getTransactionItems(transactionId: string) {
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from('transactions')
+    .select('transaction_items(*)')
+    .eq('id', transactionId)
+    .single()
+  if (error) throw error
+  return (data as any)?.transaction_items || []
 }
 
 // Khusus dashboard: query lebih ringan (tanpa detail item & tanpa join nama profil)

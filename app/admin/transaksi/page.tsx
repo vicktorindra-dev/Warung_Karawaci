@@ -1,12 +1,14 @@
 'use client'
 import { useState, useEffect, useMemo, Fragment } from 'react'
-import { getTransactions, voidTransaction } from '../actions'
+import { getTransactions, voidTransaction, getTransactionItems } from '../actions'
 import { formatTransactionId, formatJakartaTime } from '@/lib/format'
 
 export default function TransaksiPage() {
   const [transactions, setTransactions] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [itemsCache, setItemsCache] = useState<Record<string, any[]>>({})
+  const [loadingItemsId, setLoadingItemsId] = useState<string | null>(null)
   const [voidingId, setVoidingId] = useState<string | null>(null)
   const [search, setSearch] = useState('')
 
@@ -18,6 +20,24 @@ export default function TransaksiPage() {
   useEffect(() => {
     load()
   }, [])
+
+  const handleToggleExpand = async (id: string) => {
+    if (expandedId === id) {
+      setExpandedId(null)
+      return
+    }
+    setExpandedId(id)
+    if (!itemsCache[id]) {
+      setLoadingItemsId(id)
+      try {
+        const items = await getTransactionItems(id)
+        setItemsCache(prev => ({ ...prev, [id]: items }))
+      } catch (err: any) {
+        alert('Gagal memuat detail item: ' + err.message)
+      }
+      setLoadingItemsId(null)
+    }
+  }
 
   const handleVoid = async (id: string) => {
     const reason = prompt('Alasan void transaksi ini?')
@@ -74,7 +94,7 @@ export default function TransaksiPage() {
               <Fragment key={t.id}>
                 <tr
                   className="border-t cursor-pointer hover:bg-gray-50"
-                  onClick={() => setExpandedId(expandedId === t.id ? null : t.id)}
+                  onClick={() => handleToggleExpand(t.id)}
                 >
                   <td className="p-3 font-mono text-xs" title={t.id}>{formatTransactionId(t.id)}</td>
                   <td className="p-3">{formatJakartaTime(t.created_at)}</td>
@@ -107,7 +127,10 @@ export default function TransaksiPage() {
                   <tr className="bg-gray-50 border-t">
                     <td colSpan={6} className="p-3">
                       <div className="text-xs text-gray-500 mb-2">Detail Item:</div>
-                      {(t.transaction_items || []).map((item: any) => (
+                      {loadingItemsId === t.id && (
+                        <div className="text-xs text-gray-400">Memuat detail item...</div>
+                      )}
+                      {(itemsCache[t.id] || []).map((item: any) => (
                         <div key={item.id} className="flex justify-between text-sm py-1">
                           <span>{item.product_name} x{item.qty}</span>
                           <span>Rp {Number(item.subtotal).toLocaleString('id-ID')}</span>

@@ -15,7 +15,7 @@ export async function getMyTransactions() {
 
   const { data, error } = await supabase
     .from('transactions')
-    .select('*, transaction_items(*)')
+    .select('*')
     .eq('cashier_id', user.id)
     .order('created_at', { ascending: false })
 
@@ -25,6 +25,24 @@ export async function getMyTransactions() {
   const cashierName = profile?.full_name || '-'
 
   return (data || []).map((t: any) => ({ ...t, cashier_name: cashierName }))
+}
+
+// Detail item baru diambil saat baris riwayat dibuka (bukan sekaligus di awal),
+// supaya halaman riwayat lebih ringan & cepat dimuat.
+export async function getTransactionItems(transactionId: string) {
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+
+  const { data, error } = await supabase
+    .from('transactions')
+    .select('transaction_items(*)')
+    .eq('id', transactionId)
+    .eq('cashier_id', user.id)
+    .single()
+
+  if (error) throw error
+  return (data as any)?.transaction_items || []
 }
 
 export async function submitTransaction(totalAmount: number, items: any[]) {

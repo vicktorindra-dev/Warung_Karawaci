@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect, Fragment } from 'react'
 import Link from 'next/link'
-import { getMyTransactions } from '../actions'
+import { getMyTransactions, getTransactionItems } from '../actions'
 import { formatTransactionId, formatJakartaTime } from '@/lib/format'
 
 export default function RiwayatTransaksiKasirPage() {
@@ -9,6 +9,8 @@ export default function RiwayatTransaksiKasirPage() {
   const [loading, setLoading] = useState(true)
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [copiedId, setCopiedId] = useState<string | null>(null)
+  const [itemsCache, setItemsCache] = useState<Record<string, any[]>>({})
+  const [loadingItemsId, setLoadingItemsId] = useState<string | null>(null)
 
   const handleCopy = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation()
@@ -17,6 +19,24 @@ export default function RiwayatTransaksiKasirPage() {
       setCopiedId(id)
       setTimeout(() => setCopiedId(prev => (prev === id ? null : prev)), 1500)
     } catch {}
+  }
+
+  const handleToggleExpand = async (id: string) => {
+    if (expandedId === id) {
+      setExpandedId(null)
+      return
+    }
+    setExpandedId(id)
+    if (!itemsCache[id]) {
+      setLoadingItemsId(id)
+      try {
+        const items = await getTransactionItems(id)
+        setItemsCache(prev => ({ ...prev, [id]: items }))
+      } catch (err: any) {
+        alert('Gagal memuat detail item: ' + err.message)
+      }
+      setLoadingItemsId(null)
+    }
   }
 
   useEffect(() => {
@@ -60,7 +80,7 @@ export default function RiwayatTransaksiKasirPage() {
                 <Fragment key={t.id}>
                   <tr
                     className="border-t cursor-pointer hover:bg-gray-50"
-                    onClick={() => setExpandedId(expandedId === t.id ? null : t.id)}
+                    onClick={() => handleToggleExpand(t.id)}
                   >
                     <td className="p-3 font-mono text-xs" title={t.id}>
                       <div className="flex items-center gap-1.5">
@@ -89,7 +109,10 @@ export default function RiwayatTransaksiKasirPage() {
                     <tr className="bg-gray-50 border-t">
                       <td colSpan={5} className="p-3">
                         <div className="text-xs text-gray-500 mb-2">Detail Item:</div>
-                        {(t.transaction_items || []).map((item: any) => (
+                        {loadingItemsId === t.id && (
+                          <div className="text-xs text-gray-400">Memuat detail item...</div>
+                        )}
+                        {(itemsCache[t.id] || []).map((item: any) => (
                           <div key={item.id} className="flex justify-between text-sm py-1">
                             <span>{item.product_name} x{item.qty}</span>
                             <span>Rp {Number(item.subtotal).toLocaleString('id-ID')}</span>
