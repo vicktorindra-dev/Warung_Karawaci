@@ -1,4 +1,4 @@
-// File: C:\Users\Administrator\Picture\Warung_Karawaci\app\kasir\riwayat\page.tsx
+// File: C:\Users\intic\OneDrive\Desktop\Money_Trees\Warung_Karawaci\app\kasir\riwayat\page.tsx
 import * as entry from '../../../../../app/kasir/riwayat/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

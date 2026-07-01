@@ -1,4 +1,4 @@
-// File: C:\Users\Administrator\Picture\Warung_Karawaci\app\admin\transaksi\page.tsx
+// File: C:\Users\intic\OneDrive\Desktop\Money_Trees\Warung_Karawaci\app\admin\transaksi\page.tsx
 import * as entry from '../../../../../app/admin/transaksi/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

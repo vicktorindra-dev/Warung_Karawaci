@@ -8,6 +8,7 @@ export default function KasirPage() {
   const [loading, setLoading] = useState(false)
   const [search, setSearch] = useState('')
   const [uangDiterima, setUangDiterima] = useState('')
+  const [cartHidden, setCartHidden] = useState(false)
 
   useEffect(() => {
     getActiveProducts().then(setProducts)
@@ -112,31 +113,47 @@ export default function KasirPage() {
         </div>
 
         {/* Keranjang */}
-        <div className="h-[30vh] md:h-auto md:w-[280px] bg-white border-t md:border-t-0 md:border-l flex flex-col shrink-0">
-          <div className="px-3 py-2 border-b">
-            <h2 className="text-sm font-bold">Keranjang</h2>
+        <div className="max-h-[50dvh] md:max-h-none md:h-auto md:w-[280px] bg-[#edf7f0] border-t md:border-t-0 md:border-l flex flex-col shrink-0">
+          <div className="px-3 py-2 border-b flex items-center justify-between shrink-0">
+            <h2 className="text-sm font-bold">Keranjang{cart.length > 0 ? ` (${cart.length})` : ''}</h2>
+            <button
+              onClick={() => setCartHidden(h => !h)}
+              className="text-xs font-medium text-blue-600 hover:underline"
+            >
+              {cartHidden ? 'Tampilkan' : 'Sembunyikan'}
+            </button>
           </div>
-          <div className="flex-1 overflow-y-auto px-3 py-1 min-h-0">
-            {cart.length === 0 && (
-              <div className="text-xs text-gray-400 py-3">Keranjang masih kosong.</div>
-            )}
-            {cart.map(item => (
-              <div key={item.product_id} className="flex items-start gap-1.5 py-1.5 border-b last:border-0">
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium text-xs leading-snug">{item.product_name}</div>
-                  <div className="text-xs text-gray-400">Rp {item.price.toLocaleString('id-ID')}</div>
+
+          {!cartHidden && (
+            <div className="flex-1 overflow-y-auto px-3 py-1 min-h-0">
+              {cart.length === 0 && (
+                <div className="text-xs text-gray-400 py-3">Keranjang masih kosong.</div>
+              )}
+              {cart.map(item => (
+                <div key={item.product_id} className="flex items-start gap-1.5 py-1.5 border-b last:border-0">
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-xs leading-snug">{item.product_name}</div>
+                    <div className="text-xs text-gray-400">Rp {item.price.toLocaleString('id-ID')}</div>
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0 mt-0.5">
+                    <button onClick={() => updateQty(item.product_id, -1)} className="w-6 h-6 rounded bg-white hover:bg-gray-100 font-bold text-xs leading-none">−</button>
+                    <span className="w-4 text-center text-xs">{item.qty}</span>
+                    <button onClick={() => updateQty(item.product_id, 1)} className="w-6 h-6 rounded bg-white hover:bg-gray-100 font-bold text-xs leading-none">+</button>
+                  </div>
+                  <div className="text-xs font-medium w-16 text-right shrink-0 mt-0.5">Rp {item.subtotal.toLocaleString('id-ID')}</div>
+                  <button onClick={() => removeFromCart(item.product_id)} aria-label="Hapus" className="shrink-0 w-5 h-5 rounded text-red-400 hover:bg-red-100 text-sm leading-none mt-0.5">×</button>
                 </div>
-                <div className="flex items-center gap-1 shrink-0 mt-0.5">
-                  <button onClick={() => updateQty(item.product_id, -1)} className="w-6 h-6 rounded bg-gray-100 hover:bg-gray-200 font-bold text-xs leading-none">−</button>
-                  <span className="w-4 text-center text-xs">{item.qty}</span>
-                  <button onClick={() => updateQty(item.product_id, 1)} className="w-6 h-6 rounded bg-gray-100 hover:bg-gray-200 font-bold text-xs leading-none">+</button>
-                </div>
-                <div className="text-xs font-medium w-16 text-right shrink-0 mt-0.5">Rp {item.subtotal.toLocaleString('id-ID')}</div>
-                <button onClick={() => removeFromCart(item.product_id)} aria-label="Hapus" className="shrink-0 w-5 h-5 rounded text-red-400 hover:bg-red-50 text-sm leading-none mt-0.5">×</button>
-              </div>
-            ))}
-          </div>
-          <div className="px-3 py-2 border-t shrink-0">
+              ))}
+            </div>
+          )}
+
+          {cartHidden && (
+            <div className="px-3 py-2 text-xs text-gray-400 shrink-0">
+              {cart.length === 0 ? 'Keranjang masih kosong.' : `${cart.length} produk disembunyikan.`}
+            </div>
+          )}
+
+          <div className="px-3 py-2 border-t shrink-0 bg-[#edf7f0]">
             <div className="flex justify-between font-bold text-sm mb-2">
               <span>Total</span>
               <span>Rp {total.toLocaleString('id-ID')}</span>
@@ -151,7 +168,7 @@ export default function KasirPage() {
                 value={uangDiterima}
                 onChange={e => setUangDiterima(e.target.value.replace(/\D/g, ''))}
                 placeholder="Opsional"
-                className="w-full border rounded px-2 py-1 text-xs font-normal text-right"
+                className="w-full border rounded px-2 py-1 text-base md:text-xs font-normal text-right bg-white"
               />
             </div>
 
