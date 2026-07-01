@@ -52,7 +52,7 @@ export default function RiwayatTransaksiKasirPage() {
                     onClick={() => setExpandedId(expandedId === t.id ? null : t.id)}
                   >
                     <td className="p-3 font-mono text-xs" title={t.id}>{formatTransactionId(t.id)}</td>
-                    <td className="p-3">{new Date(t.created_at).toLocaleString('id-ID')}</td>
+                    <td className="p-3">{new Date(t.created_at).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })}</td>
                     <td className="p-3 font-medium">Rp {Number(t.total_amount).toLocaleString('id-ID')}</td>
                     <td className="p-3">
                       <span className={`px-2 py-1 rounded text-xs font-semibold ${t.status === 'void' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>

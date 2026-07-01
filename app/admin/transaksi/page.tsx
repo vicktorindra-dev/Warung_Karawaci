@@ -77,7 +77,7 @@ export default function TransaksiPage() {
                   onClick={() => setExpandedId(expandedId === t.id ? null : t.id)}
                 >
                   <td className="p-3 font-mono text-xs" title={t.id}>{formatTransactionId(t.id)}</td>
-                  <td className="p-3">{new Date(t.created_at).toLocaleString('id-ID')}</td>
+                  <td className="p-3">{new Date(t.created_at).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })}</td>
                   <td className="p-3">{t.cashier_name}</td>
                   <td className="p-3 font-medium">Rp {Number(t.total_amount).toLocaleString('id-ID')}</td>
                   <td className="p-3">

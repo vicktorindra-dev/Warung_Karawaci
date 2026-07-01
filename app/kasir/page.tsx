@@ -143,7 +143,7 @@ export default function KasirPage() {
             </div>
 
             {/* Uang yang diterima (opsional) */}
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-2 mb-2">
               <label className="text-xs text-gray-500 font-normal shrink-0">Uang yang diterima</label>
               <input
                 type="text"
@@ -157,13 +157,15 @@ export default function KasirPage() {
 
             {/* Kembalian — hanya tampil jika uang diisi */}
             {uangNum > 0 && (
-              <div className="flex justify-between text-xs font-normal mb-2">
+              <div className="flex justify-between text-xs font-normal mb-8">
                 <span className="text-gray-500">Kembalian</span>
                 <span className={kembalian >= 0 ? 'text-yellow-500' : 'text-red-500'}>
                   Rp {kembalian.toLocaleString('id-ID')}
                 </span>
               </div>
             )}
+
+            {uangNum === 0 && <div className="mb-8" />}
 
             <button onClick={handleCheckout} disabled={loading || cart.length === 0} className="w-full bg-green-600 text-white py-2 rounded font-bold text-sm hover:bg-green-700 disabled:opacity-50">
               {loading ? 'Memproses...' : 'Selesaikan Transaksi'}
