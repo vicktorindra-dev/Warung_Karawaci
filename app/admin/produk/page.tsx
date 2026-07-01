@@ -84,7 +84,9 @@ export default function KelolaProdukPage() {
       {/* Form Tambah / Edit */}
       <form onSubmit={handleSubmit} className="bg-white border rounded-lg p-4 mb-8 grid grid-cols-1 md:grid-cols-6 gap-3 items-end">
         <datalist id="category-options">
-          {Array.from(new Set(products.map(p => p.category).filter(Boolean))).map(c => (
+          {Array.from(new Set(
+            products.flatMap(p => (p.category || '').split(',').map(c => c.trim()).filter(Boolean))
+          )).sort().map(c => (
             <option key={c} value={c} />
           ))}
         </datalist>
@@ -105,7 +107,7 @@ export default function KelolaProdukPage() {
             value={form.category}
             onChange={e => setForm({ ...form, category: e.target.value })}
             className="w-full border rounded px-3 py-2"
-            placeholder="Mie Instan, Minuman..."
+            placeholder="Mie Instan, Mie Cup"
             list="category-options"
           />
         </div>
@@ -140,6 +142,10 @@ export default function KelolaProdukPage() {
             className="w-full border rounded px-3 py-2"
             placeholder="pcs / kg / botol"
           />
+        </div>
+
+        <div className="md:col-span-6 -mt-1 text-xs text-gray-400">
+          Kategori bisa diisi lebih dari satu, pisahkan dengan koma (misal "Mie Instan, Mie Cup"). Produk akan muncul di semua kategori itu, dengan stok yang tetap sama.
         </div>
 
         <div className="md:col-span-6 flex items-center gap-3">
@@ -193,7 +199,13 @@ export default function KelolaProdukPage() {
             {products.map(p => (
               <tr key={p.id} className="border-t">
                 <td className="p-3 font-medium">{p.name}</td>
-                <td className="p-3 text-gray-500">{p.category}</td>
+                <td className="p-3">
+                  <div className="flex flex-wrap gap-1">
+                    {(p.category || '').split(',').map(c => c.trim()).filter(Boolean).map(c => (
+                      <span key={c} className="px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded text-xs">{c}</span>
+                    ))}
+                  </div>
+                </td>
                 <td className="p-3">Rp {p.price.toLocaleString('id-ID')}</td>
                 <td className="p-3">{p.stock}</td>
                 <td className="p-3">{p.unit}</td>

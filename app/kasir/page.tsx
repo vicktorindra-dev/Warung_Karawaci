@@ -69,9 +69,14 @@ export default function KasirPage() {
   const grouped = useMemo(() => {
     const map: Record<string, any[]> = {}
     for (const p of filteredProducts) {
-      const cat = p.category || 'Lainnya'
-      if (!map[cat]) map[cat] = []
-      map[cat].push(p)
+      const cats = (p.category || 'Lainnya')
+        .split(',')
+        .map((c: string) => c.trim())
+        .filter(Boolean)
+      for (const cat of (cats.length > 0 ? cats : ['Lainnya'])) {
+        if (!map[cat]) map[cat] = []
+        map[cat].push(p)
+      }
     }
     return Object.entries(map).sort((a, b) => a[0].localeCompare(b[0]))
   }, [filteredProducts])
