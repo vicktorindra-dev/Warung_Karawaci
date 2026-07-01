@@ -20,7 +20,11 @@ export async function getMyTransactions() {
     .order('created_at', { ascending: false })
 
   if (error) throw error
-  return data
+
+  const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', user.id).single()
+  const cashierName = profile?.full_name || '-'
+
+  return (data || []).map((t: any) => ({ ...t, cashier_name: cashierName }))
 }
 
 export async function submitTransaction(totalAmount: number, items: any[]) {

@@ -1,2 +1,8 @@
 node_modules
 .next/
+/.next
+/.next
+/.next
+/.next/cache/webpack/client-development
+.next/server/vendor-chunks/next.js
+.next/static/chunks/app/admin/produk/page.js

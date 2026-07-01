@@ -48,23 +48,36 @@ export async function getTransactions() {
     .order('created_at', { ascending: false })
   if (error) throw error
 
-  const cashierIds = Array.from(new Set((transactions || []).map((t: any) => t.cashier_id).filter(Boolean)))
+  const profileIds = new Set<string>()
+  for (const t of transactions || []) {
+    if (t.cashier_id) profileIds.add(t.cashier_id)
+    if (t.voided_by) profileIds.add(t.voided_by)
+  }
+
   let profilesMap: Record<string, string> = {}
-  if (cashierIds.length > 0) {
-    const { data: profiles } = await supabase.from('profiles').select('id, full_name').in('id', cashierIds)
+  if (profileIds.size > 0) {
+    const { data: profiles } = await supabase.from('profiles').select('id, full_name').in('id', Array.from(profileIds))
     profilesMap = Object.fromEntries((profiles || []).map((p: any) => [p.id, p.full_name]))
   }
 
-  return (transactions || []).map((t: any) => ({ ...t, cashier_name: profilesMap[t.cashier_id] || '-' }))
+  return (transactions || []).map((t: any) => ({
+    ...t,
+    cashier_name: profilesMap[t.cashier_id] || '-',
+    voided_by_name: t.voided_by ? (profilesMap[t.voided_by] || '-') : null,
+  }))
 }
 
 export async function voidTransaction(transactionId: string, reason: string) {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  
+
+  if (!user) {
+    throw new Error('Sesi admin tidak terbaca. Silakan refresh halaman ini dan coba void lagi.')
+  }
+
   const { error } = await supabase.rpc('void_transaction', {
     p_transaction_id: transactionId,
-    p_admin_id: user?.id,
+    p_admin_id: user.id,
     p_reason: reason
   })
   if (error) throw error

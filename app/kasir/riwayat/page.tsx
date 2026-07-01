@@ -2,12 +2,22 @@
 import { useState, useEffect, Fragment } from 'react'
 import Link from 'next/link'
 import { getMyTransactions } from '../actions'
-import { formatTransactionId } from '@/lib/format'
+import { formatTransactionId, formatJakartaTime } from '@/lib/format'
 
 export default function RiwayatTransaksiKasirPage() {
   const [transactions, setTransactions] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [copiedId, setCopiedId] = useState<string | null>(null)
+
+  const handleCopy = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation()
+    try {
+      await navigator.clipboard.writeText(formatTransactionId(id))
+      setCopiedId(id)
+      setTimeout(() => setCopiedId(prev => (prev === id ? null : prev)), 1500)
+    } catch {}
+  }
 
   useEffect(() => {
     getMyTransactions()
@@ -34,16 +44,17 @@ export default function RiwayatTransaksiKasirPage() {
               <tr>
                 <th className="p-3">ID Transaksi</th>
                 <th className="p-3">Waktu</th>
+                <th className="p-3">Kasir</th>
                 <th className="p-3">Total</th>
                 <th className="p-3">Status</th>
               </tr>
             </thead>
             <tbody>
               {loading && (
-                <tr><td colSpan={4} className="p-4 text-center text-gray-500">Memuat riwayat...</td></tr>
+                <tr><td colSpan={5} className="p-4 text-center text-gray-500">Memuat riwayat...</td></tr>
               )}
               {!loading && transactions.length === 0 && (
-                <tr><td colSpan={4} className="p-4 text-center text-gray-500">Belum ada transaksi.</td></tr>
+                <tr><td colSpan={5} className="p-4 text-center text-gray-500">Belum ada transaksi.</td></tr>
               )}
               {transactions.map(t => (
                 <Fragment key={t.id}>
@@ -51,8 +62,19 @@ export default function RiwayatTransaksiKasirPage() {
                     className="border-t cursor-pointer hover:bg-gray-50"
                     onClick={() => setExpandedId(expandedId === t.id ? null : t.id)}
                   >
-                    <td className="p-3 font-mono text-xs" title={t.id}>{formatTransactionId(t.id)}</td>
-                    <td className="p-3">{new Date(t.created_at).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })}</td>
+                    <td className="p-3 font-mono text-xs" title={t.id}>
+                      <div className="flex items-center gap-1.5">
+                        <span>{formatTransactionId(t.id)}</span>
+                        <button
+                          onClick={e => handleCopy(e, t.id)}
+                          className="shrink-0 px-1.5 py-0.5 rounded border text-[10px] font-sans font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+                        >
+                          {copiedId === t.id ? 'Tersalin!' : 'Salin'}
+                        </button>
+                      </div>
+                    </td>
+                    <td className="p-3">{formatJakartaTime(t.created_at)}</td>
+                    <td className="p-3">{t.cashier_name}</td>
                     <td className="p-3 font-medium">Rp {Number(t.total_amount).toLocaleString('id-ID')}</td>
                     <td className="p-3">
                       <span className={`px-2 py-1 rounded text-xs font-semibold ${t.status === 'void' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
@@ -65,7 +87,7 @@ export default function RiwayatTransaksiKasirPage() {
                   </tr>
                   {expandedId === t.id && (
                     <tr className="bg-gray-50 border-t">
-                      <td colSpan={4} className="p-3">
+                      <td colSpan={5} className="p-3">
                         <div className="text-xs text-gray-500 mb-2">Detail Item:</div>
                         {(t.transaction_items || []).map((item: any) => (
                           <div key={item.id} className="flex justify-between text-sm py-1">

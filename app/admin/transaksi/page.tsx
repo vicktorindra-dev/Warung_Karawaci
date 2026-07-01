@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect, useMemo, Fragment } from 'react'
 import { getTransactions, voidTransaction } from '../actions'
-import { formatTransactionId } from '@/lib/format'
+import { formatTransactionId, formatJakartaTime } from '@/lib/format'
 
 export default function TransaksiPage() {
   const [transactions, setTransactions] = useState<any[]>([])
@@ -77,7 +77,7 @@ export default function TransaksiPage() {
                   onClick={() => setExpandedId(expandedId === t.id ? null : t.id)}
                 >
                   <td className="p-3 font-mono text-xs" title={t.id}>{formatTransactionId(t.id)}</td>
-                  <td className="p-3">{new Date(t.created_at).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })}</td>
+                  <td className="p-3">{formatJakartaTime(t.created_at)}</td>
                   <td className="p-3">{t.cashier_name}</td>
                   <td className="p-3 font-medium">Rp {Number(t.total_amount).toLocaleString('id-ID')}</td>
                   <td className="p-3">
@@ -86,6 +86,9 @@ export default function TransaksiPage() {
                     </span>
                     {t.status === 'void' && t.void_reason && (
                       <div className="text-xs text-gray-500 mt-1">Alasan: {t.void_reason}</div>
+                    )}
+                    {t.status === 'void' && t.voided_by_name && (
+                      <div className="text-xs text-gray-500">Divoid oleh: {t.voided_by_name}</div>
                     )}
                   </td>
                   <td className="p-3" onClick={e => e.stopPropagation()}>
