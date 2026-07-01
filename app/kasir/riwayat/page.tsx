@@ -16,15 +16,15 @@ export default function RiwayatTransaksiKasirPage() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b px-4 py-3 flex items-center justify-between">
-        <span className="font-bold">Riwayat Transaksi Saya</span>
-        <Link href="/kasir" className="text-sm text-blue-600 hover:underline">Kembali ke Kasir</Link>
-      </header>
-
+    <div className="flex-1 overflow-y-auto bg-gray-50">
       <div className="p-4 max-w-4xl mx-auto">
+
+        <Link href="/kasir" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 mb-4">
+          ← Kembali ke Kasir
+        </Link>
+
         <div className="bg-blue-50 border border-blue-200 text-blue-800 text-sm rounded p-3 mb-4">
-          Halaman ini hanya untuk melihat riwayat transaksi. Jika ada transaksi yang salah dan perlu dibatalkan,
+          Halaman ini hanya untuk melihat riwayat transaksi. Jika ada transaksi yang perlu dibatalkan,
           catat <strong>ID Transaksi</strong>-nya dan sampaikan ke admin untuk diproses void.
         </div>
 
