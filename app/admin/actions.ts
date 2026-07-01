@@ -56,7 +56,10 @@ export async function getTransactions() {
 
   let profilesMap: Record<string, string> = {}
   if (profileIds.size > 0) {
-    const { data: profiles } = await supabase.from('profiles').select('id, full_name').in('id', Array.from(profileIds))
+    const { data: profiles, error: profilesError } = await supabase.rpc('get_profile_names', {
+      profile_ids: Array.from(profileIds),
+    })
+    if (profilesError) throw profilesError
     profilesMap = Object.fromEntries((profiles || []).map((p: any) => [p.id, p.full_name]))
   }
 
@@ -65,6 +68,33 @@ export async function getTransactions() {
     cashier_name: profilesMap[t.cashier_id] || '-',
     voided_by_name: t.voided_by ? (profilesMap[t.voided_by] || '-') : null,
   }))
+}
+
+// Khusus dashboard: query lebih ringan (tanpa detail item & tanpa join nama profil)
+// karena dashboard butuh ambil banyak transaksi sekaligus (untuk grafik & rekap periode).
+export async function getTransactionsForDashboard() {
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from('transactions')
+    .select('id, total_amount, status, created_at')
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return data || []
+}
+
+// Setting sederhana (key-value) yang tersimpan di database, dipakai supaya preferensi
+// seperti range grafik keuntungan otomatis kepakai lagi tanpa perlu diatur ulang.
+export async function getSetting(key: string) {
+  const supabase = createClient()
+  const { data, error } = await supabase.from('app_settings').select('value').eq('key', key).maybeSingle()
+  if (error) throw error
+  return data?.value ?? null
+}
+
+export async function saveSetting(key: string, value: unknown) {
+  const supabase = createClient()
+  const { error } = await supabase.from('app_settings').upsert({ key, value, updated_at: new Date().toISOString() })
+  if (error) throw error
 }
 
 export async function voidTransaction(transactionId: string, reason: string) {
