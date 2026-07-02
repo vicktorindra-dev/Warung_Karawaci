@@ -1,12 +1,37 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createServerClient } from '@supabase/ssr'
 
 const ROLE_COOKIE = 'warung_role'
 
 export async function middleware(request: NextRequest) {
-  const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
   const path = request.nextUrl.pathname
+
+  // Supabase client khusus middleware — baca/tulis cookie dari request & response
+  // langsung, bukan pakai cookies() dari next/headers (itu untuk Server Components).
+  // Ini yang bikin session refresh berjalan benar dan mencegah error fetch failed.
+  let response = NextResponse.next({ request })
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll()
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+          response = NextResponse.next({ request })
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options)
+          )
+        },
+      },
+    }
+  )
+
+  // Verifikasi session — wajib untuk keamanan, tidak bisa di-skip
+  const { data: { user } } = await supabase.auth.getUser()
 
   if (!user && path !== '/login') {
     const res = NextResponse.redirect(new URL('/login', request.url))
@@ -15,17 +40,26 @@ export async function middleware(request: NextRequest) {
   }
 
   if (user) {
-    // Role jarang berubah, jadi kita cache di cookie supaya tidak query
-    // tabel `profiles` di setiap perpindahan halaman (ini yang bikin lelet).
+    // Baca role dari cookie — tidak perlu query DB tiap request
     let role = request.cookies.get(ROLE_COOKIE)?.value
 
     if (!role) {
-      const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+      // Hanya query DB sekali saat cookie belum ada (pertama login atau expired)
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
       role = profile?.role
     }
 
     const applyRoleCookie = (res: NextResponse) => {
-      if (role) res.cookies.set(ROLE_COOKIE, role, { httpOnly: true, sameSite: 'lax', path: '/', maxAge: 60 * 60 * 8 })
+      if (role) res.cookies.set(ROLE_COOKIE, role, {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 60 * 60 * 8
+      })
       return res
     }
 
@@ -41,9 +75,10 @@ export async function middleware(request: NextRequest) {
       return applyRoleCookie(NextResponse.redirect(new URL('/admin', request.url)))
     }
 
-    return applyRoleCookie(NextResponse.next())
+    return applyRoleCookie(response)
   }
-  return NextResponse.next()
+
+  return response
 }
 
 export const config = {
